@@ -66,12 +66,9 @@ impl LeapController {
 
                 while running {
                     // println!("polling");
-                    match stop_receiver.try_recv() {
-                        Ok(stopped) => {
-                            running = !stopped;
-                            println!("stop received");
-                        }
-                        _ => {}
+                    if let Ok(stopped) = stop_receiver.try_recv() {
+                        running = !stopped;
+                        println!("stop received");
                     }
 
                     let mut msg: MaybeUninit<LEAP_CONNECTION_MESSAGE> = MaybeUninit::uninit();

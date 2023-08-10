@@ -1,10 +1,9 @@
 {
   "recommendations": [
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
     "rust-lang.rust-analyzer",
     "polymeilex.wgsl",
     "tamasfe.even-better-toml",
-    "serayuzgur.crates"
+    "serayuzgur.crates",
+    "vadimcn.vscode-lldb"
   ]
 }
