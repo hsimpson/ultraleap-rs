@@ -12,7 +12,7 @@ To get this running you have to set the environment variable for the dynamic lin
 MacOS:
 
 ```bash
-export DYLD_LIBRARY_PATH=/Library/Application\ Support/Ultraleap/LeapSDK/lib
+export DYLD_LIBRARY_PATH=/Library/Application\ Support/Ultraleap/LeapSDK/lib:$DYLD_LIBRARY_PATH
 ```
 
 Windows:

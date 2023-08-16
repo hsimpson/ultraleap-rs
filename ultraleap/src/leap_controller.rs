@@ -5,6 +5,7 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 use crate::tracking_event::*;
+use log::{info, trace, warn};
 use std::mem::MaybeUninit;
 use std::ptr;
 use std::sync::mpsc::{self, *};
@@ -37,7 +38,7 @@ impl LeapController {
 
     fn open_connection(&mut self) {
         if self.running {
-            println!("already running");
+            warn!("already running");
             return;
         }
         self.running = true;
@@ -48,27 +49,27 @@ impl LeapController {
         self.stop_sender = Some(stop_sender);
         self.tracking_event_receiver = Some(tracking_event_receiver);
         self.polling_thread = Some(thread::spawn(move || {
-            println!("start polling thread");
+            info!("start polling thread");
             unsafe {
                 const CONFIG: MaybeUninit<LEAP_CONNECTION_CONFIG> = MaybeUninit::uninit();
                 let mut connection: LEAP_CONNECTION = ptr::null_mut();
                 let mut running = false;
-                println!("creating and opening connection");
+                info!("creating and opening connection");
                 if LeapCreateConnection(CONFIG.as_ptr(), &mut connection)
                     == _eLeapRS_eLeapRS_Success
                     && LeapOpenConnection(connection) == _eLeapRS_eLeapRS_Success
                 {
-                    println!("connection created and open");
+                    info!("connection created and open");
                     running = true;
                 }
 
                 let mut last_frame_id = 0;
 
                 while running {
-                    // println!("polling");
+                    trace!("polling");
                     if let Ok(stopped) = stop_receiver.try_recv() {
                         running = !stopped;
-                        println!("stop received");
+                        info!("stop received");
                     }
 
                     let mut msg: MaybeUninit<LEAP_CONNECTION_MESSAGE> = MaybeUninit::uninit();
@@ -111,26 +112,14 @@ impl LeapController {
 
                             tracking_event_sender.send(tracking_event).unwrap();
                         }
-
-                        // if (*tracking_event).nHands == 1 {
-                        //     let hands = (*tracking_event).pHands;
-                        //     let hand = *hands;
-
-                        //     let palm = hand.palm;
-                        //     let pos = palm.position.__bindgen_anon_1.__bindgen_anon_1;
-                        //     let x = pos.x;
-                        //     let y = pos.y;
-                        //     let z = pos.z;
-                        //     println!("palm position: ({}, {}, {})", x, y, z);
-                        // }
                     }
 
-                    // println!("polled {}", type_);
+                    trace!("polled {}", type_);
                 }
 
                 LeapCloseConnection(connection);
             }
-            println!("end polling thread")
+            info!("end polling thread")
         }));
     }
 
@@ -153,7 +142,7 @@ impl LeapController {
 impl Drop for LeapController {
     fn drop(&mut self) {
         if self.running {
-            println!("closing connection");
+            info!("closing connection");
             self.close_connection();
         }
     }
