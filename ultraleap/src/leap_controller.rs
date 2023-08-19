@@ -1,10 +1,8 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(dead_code)]
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
-use crate::tracking_event::*;
+use crate::{
+    tracking_event::*, LeapCloseConnection, LeapCreateConnection, LeapOpenConnection,
+    LeapPollConnection, _eLeapEventType_eLeapEventType_Tracking, _eLeapRS_eLeapRS_Success,
+    LEAP_CONNECTION, LEAP_CONNECTION_CONFIG, LEAP_CONNECTION_MESSAGE,
+};
 use log::{info, trace, warn};
 use std::mem::MaybeUninit;
 use std::ptr;
@@ -89,26 +87,7 @@ impl LeapController {
                         if raw_tracking_event.tracking_frame_id != last_frame_id {
                             last_frame_id = raw_tracking_event.tracking_frame_id;
 
-                            let mut tracking_event = TrackingEvent {
-                                event_id: raw_tracking_event.tracking_frame_id,
-                                hands: vec![],
-                            };
-
-                            if raw_tracking_event.nHands > 0 {
-                                for i in 0..raw_tracking_event.nHands {
-                                    let raw_hand = *raw_tracking_event.pHands.offset(i as isize);
-                                    let raw_palm = raw_hand.palm;
-                                    let palm = Palm {
-                                        position: raw_palm.position.__bindgen_anon_1.v,
-                                        orientation: raw_palm.orientation.__bindgen_anon_1.v,
-                                    };
-                                    let hand = Hand {
-                                        id: raw_hand.id,
-                                        palm,
-                                    };
-                                    tracking_event.hands.push(hand);
-                                }
-                            }
+                            let tracking_event = TrackingEvent::from_raw(&raw_tracking_event);
 
                             tracking_event_sender.send(tracking_event).unwrap();
                         }
