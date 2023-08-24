@@ -7,7 +7,9 @@ fn main() {
     if env::consts::OS == "macos" {
         leapc_dir_path = "/Library/Application Support/Ultraleap/LeapSDK";
     } else if env::consts::OS == "window" {
-        leapc_dir_path = "unkonwn";
+        leapc_dir_path = "unkonwn_windows";
+    } else if env::consts::OS == "linux" {
+        leapc_dir_path = "unkonwn_linux";
     }
 
     let leap_sdk_dir = PathBuf::from(leapc_dir_path)
@@ -26,7 +28,7 @@ fn main() {
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search={}", lib_path.to_str().unwrap());
 
-    // Tell cargo to tell rustc to link the system bzip2
+    // Tell cargo to tell rustc to link the system LeapC
     // shared library.
     println!("cargo:rustc-link-lib=LeapC");
 

@@ -1,11 +1,3 @@
-// #![allow(non_upper_case_globals)]
-// #![allow(non_camel_case_types)]
-// #![allow(non_snake_case)]
-// #![allow(dead_code)]
-// include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
-// use crate::leap_controller::{_LEAP_BONE, _LEAP_DIGIT};
-
 use crate::{_LEAP_BONE, _LEAP_DIGIT, _LEAP_HAND, _LEAP_PALM, _LEAP_TRACKING_EVENT};
 
 type LeapVector = [f32; 3];
@@ -101,9 +93,43 @@ impl Hand {
     }
 }
 
+const Y_OFFSET: f32 = 120.0;
+const HEIGHT: f32 = 300.0;
+const FOV_X: f32 = 130.0;
+const FOV_Y: f32 = 110.0;
+
+pub struct InteractionBox {
+    pub width: f32,
+    pub height: f32,
+    pub depth: f32,
+}
+
+impl InteractionBox {
+    pub fn new() -> InteractionBox {
+        InteractionBox {
+            width: Y_OFFSET * f32::tan(FOV_X.to_radians() / 2.0) * 2.0,
+            height: HEIGHT,
+            depth: Y_OFFSET * f32::tan(FOV_Y.to_radians() / 2.0) * 2.0,
+        }
+    }
+    pub fn normalize_point(&self, point: LeapVector) -> LeapVector {
+        let normalized_x = point[0] / (self.width / 2.0);
+        let normalized_y = (point[1] - Y_OFFSET) / (self.height / 2.0);
+        let normalized_z = point[2] / (self.depth / 2.0);
+        [normalized_x, normalized_y - 1.0, normalized_z]
+    }
+}
+
+impl Default for InteractionBox {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct TrackingEvent {
     pub event_id: i64,
     pub hands: Vec<Hand>,
+    pub interaction_box: InteractionBox,
 }
 
 impl TrackingEvent {
@@ -112,6 +138,7 @@ impl TrackingEvent {
             let mut tracking_event = TrackingEvent {
                 event_id: raw_tracking_event.tracking_frame_id,
                 hands: vec![],
+                interaction_box: InteractionBox::new(),
             };
 
             for i in 0..raw_tracking_event.nHands {
