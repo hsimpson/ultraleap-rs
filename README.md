@@ -6,3 +6,4 @@ Projects:
 
 - ulraleap: the wrapper crate library which uses the LeapC-SDK
 - cube: a simple example which uses ulraleap wrapper crate to control a cube in a window
+- draw: a simple example which uses ulraleap wrapper crate to draw splines in a window
