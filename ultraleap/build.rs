@@ -1,13 +1,13 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn main() {
     // This is the directory where the `c` library is located.
     let mut leapc_dir_path = "";
     if env::consts::OS == "macos" {
         leapc_dir_path = "/Library/Application Support/Ultraleap/LeapSDK";
-    } else if env::consts::OS == "window" {
-        leapc_dir_path = "unkonwn_windows";
+    } else if env::consts::OS == "windows" {
+        leapc_dir_path = "C:\\Program Files\\Ultraleap\\LeapSDK";
     } else if env::consts::OS == "linux" {
         leapc_dir_path = "unkonwn_linux";
     }
@@ -23,7 +23,10 @@ fn main() {
     let headers_path_str = headers_path.to_str().expect("Path is not a valid string");
 
     // This is the path where the library is located.
-    let lib_path = leap_sdk_dir.join("lib");
+    let mut lib_path = leap_sdk_dir.join("lib");
+    if env::consts::OS == "windows" {
+        lib_path = lib_path.join("x64");
+    }
 
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search={}", lib_path.to_str().unwrap());
@@ -55,4 +58,23 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
+
+    if env::consts::OS == "windows" {
+        // on windows copy to the target directory
+        let src = "C:\\Program Files\\Ultraleap\\LeapSDK\\lib\\x64\\LeapC.dll";
+        // let bin_name = env::var("CARGO_BIN_NAME").unwrap();
+        // let bin_path_env = format!("CARGO_TARGET_DIR_{}", bin_name);
+        let manifest_dir_string = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let build_type = env::var("PROFILE").unwrap();
+        let dst = Path::new(&manifest_dir_string)
+            .parent()
+            .unwrap()
+            .join("target")
+            .join(build_type)
+            .join("LeapC.dll");
+        // let mut dst = PathBuf::from(env::var(bin_path_env).unwrap());
+        // let dst = PathBuf::from(path);
+        println!("cargo:warning={:#?}", dst);
+        std::fs::copy(src, dst).expect("Failed to copy LeapC.dll");
+    }
 }
