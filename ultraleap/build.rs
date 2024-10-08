@@ -5,7 +5,7 @@ fn main() {
     // This is the directory where the `c` library is located.
     let mut leapc_dir_path = "";
     if env::consts::OS == "macos" {
-        leapc_dir_path = "/Library/Application Support/Ultraleap/LeapSDK";
+        leapc_dir_path = "/Applications/Ultraleap Hand Tracking.app/Contents/LeapSDK";
     } else if env::consts::OS == "windows" {
         leapc_dir_path = "C:\\Program Files\\Ultraleap\\LeapSDK";
     } else if env::consts::OS == "linux" {
