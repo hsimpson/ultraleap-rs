@@ -1,6 +1,6 @@
-use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::pbr::wireframe::{Wireframe, WireframePlugin};
 use bevy::prelude::*;
+use bevy::render::camera::ClearColorConfig;
 use ultraleap::LeapController;
 
 const TRANSLATION_FACTOR: f32 = 0.025;
@@ -33,8 +33,8 @@ fn spawn_cube(
     // cube
     commands.spawn((
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.0, 0.0, 1.0).into()),
+            mesh: meshes.add(Cuboid::new(1.0, 1.0, 1.0)),
+            material: materials.add(Color::srgb(0.0, 0.0, 1.0)),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         },
@@ -56,8 +56,9 @@ fn spawn_camera(mut commands: Commands) {
     });
     // camera
     commands.spawn(Camera3dBundle {
-        camera_3d: Camera3d {
-            clear_color: ClearColorConfig::Custom(Color::rgb(0.1, 0.1, 0.1)),
+        camera_3d: Camera3d { ..default() },
+        camera: Camera {
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.1)),
             ..default()
         },
         transform: Transform::from_xyz(0.0, 0.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),

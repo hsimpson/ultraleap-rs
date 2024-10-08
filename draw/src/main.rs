@@ -1,8 +1,6 @@
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, window::PrimaryWindow, window::WindowMode,
-};
+use bevy::{render::camera::ClearColorConfig, window::PrimaryWindow, window::WindowMode};
 use bevy_prototype_lyon::prelude::*;
 use ultraleap::LeapController;
 
@@ -25,7 +23,7 @@ fn main() {
                 }),
         )
         .add_plugins(ShapePlugin)
-        .add_state::<DrawState>()
+        .init_state::<DrawState>()
         .add_systems(Startup, setup_ultraleap)
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_cursor)
@@ -59,8 +57,10 @@ fn setup_ultraleap(world: &mut World) {
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle {
-        camera_2d: Camera2d {
-            clear_color: ClearColorConfig::Custom(Color::rgb(0.96, 0.96, 0.88)),
+        camera_2d: Camera2d { ..default() },
+        camera: Camera {
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.1)),
+            ..default()
         },
         ..default()
     });
@@ -77,21 +77,8 @@ fn spawn_cursor(mut commands: Commands) {
             path: GeometryBuilder::build_as(&shape),
             ..default()
         },
-        Fill::color(Color::Rgba {
-            red: 1.0,
-            green: 0.0,
-            blue: 0.0,
-            alpha: 0.8,
-        }),
-        Stroke::new(
-            Color::Rgba {
-                red: 1.0,
-                green: 0.0,
-                blue: 0.0,
-                alpha: 0.8,
-            },
-            3.0,
-        ),
+        Fill::color(Color::srgba(1.0, 0.0, 0.0, 0.8)),
+        Stroke::new(Color::srgba(1.0, 0.0, 0.0, 0.8), 3.0),
         Cursor {},
     ));
 }
@@ -128,23 +115,13 @@ fn cursor_movement(
                     let alpha = (z.clamp(0.0, 1.0) - 1.0).abs();
                     if z > 0.0 {
                         // hovering
-                        fill.color = Color::Rgba {
-                            red: 1.0,
-                            green: 0.0,
-                            blue: 0.0,
-                            alpha,
-                        };
+                        fill.color = Color::srgba(1.0, 0.0, 0.0, alpha);
                         if drawing_current_state.get() == &DrawState::Drawing {
                             drawing_next_state.set(DrawState::Hovering);
                         }
                     } else {
                         // drawing
-                        fill.color = Color::Rgba {
-                            red: 0.0,
-                            green: 1.0,
-                            blue: 0.0,
-                            alpha: 0.8,
-                        };
+                        fill.color = Color::srgba(0.0, 1.0, 0.0, 0.8);
                         let spline_point =
                             Vec2::new(transform.translation.x, transform.translation.y);
                         if drawing_current_state.get() == &DrawState::Hovering {
